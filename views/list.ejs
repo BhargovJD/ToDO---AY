@@ -1,0 +1,35 @@
+<%- include("header") -%>
+
+
+<h1>It's a <%= listTitle %></h1>
+
+    <ul>
+  
+
+      <!-- Simple for loop -->
+      <!-- <% for(var i=0; i < newListItems.length; i++) { %>
+        <div>
+          
+          <li><input type="checkbox" autocomplete="off"> <%= newListItems[i].name %> </li>
+        </div>
+        
+      <% } %> -->
+
+      <!-- For each loop  -->
+
+        <% newListItems.forEach(function(item) { %>
+          <form action="/delete" method="post">
+          <li><input value="<%= item._id  %>" onChange="this.form.submit()" name="ck" type="checkbox" ><%= item.name %></li>
+        </form>
+        <% }); %> 
+      
+    </ul>
+
+    <form action="/" method="post">
+      <input type="text" name="newItem"/>
+      <button type="submit" name="list" value=<%= listTitle %>>Add</button>
+    </form>
+
+    <%- include("footer") -%>
+
+
