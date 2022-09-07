@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const _ = require('lodash')
 
 const app = express()
 
@@ -43,6 +44,15 @@ const item3 = new Item({
 const defaultItem = [item1, item2, item3]
 
 
+// Custom list schema
+const listSchema = {
+  name:String,
+  items : [itemSchema]
+};
+
+// collection
+const List = mongoose.model("List", listSchema);
+
 
 
 // READ
@@ -69,6 +79,34 @@ Item.find(function(err, foundItems){
 })
   
 })
+ 
+// Custom param
+app.get("/:customListName", function(req,res){
+  // console.log(req.params.customListName)
+  const customListName = _.capitalize(req.params.customListName);
+
+  List.findOne({name:customListName}, function(err, foundList){
+    if(!err){
+      if(!foundList){
+        const list = new List({
+          name:customListName,
+          items:defaultItem
+        })
+      
+        list.save()
+        res.redirect("/"+customListName)
+      }
+      else{
+        res.render('list',{listTitle:foundList.name, newListItems:foundList.items})
+      }
+    }
+  })
+
+ 
+
+
+
+})
 
 
 
@@ -77,23 +115,25 @@ app.post('/', (req, res) => {
   // console.log(req.body)
   var itemName = req.body.newItem;
 
+  // button name value
+  var listName = req.body.list;
+
   const newItem = new Item({ 
     name: itemName,
   });
 
-
+  if(listName === "Today"){
   // Save : insert one
   newItem.save().then(() => console.log('One document inserted!'));
   res.redirect("/")
-
-  // if(req.body.list == 'Work_List'){
-  //   workItems.push(item)
-  //   res.redirect("/work")
-  // }
-  // else{
-  //   items.push(item)
-  //   res.redirect("/")
-  // }
+  }
+  else{
+    List.findOne({name:listName}, function(err, foundList){
+      foundList.items.push(newItem)
+      foundList.save()
+      res.redirect("/"+listName)
+    })
+  }
 
 })
 
@@ -103,6 +143,10 @@ app.post('/delete', function(req, res) {
   
   // console.log(req.body.ck)
   const checkedItemId = req.body.ck;
+  const listName = req.body.listName;
+
+
+if(listName === "Today"){
   Item.findByIdAndDelete(checkedItemId,function(err){
     if(!err){
       console.log("Successfully deleted checked item!")
@@ -110,14 +154,20 @@ app.post('/delete', function(req, res) {
     }
   })
   
+}
+
+else{
+
+  console.log("l;;")
+  List.findOneAndUpdate({name:listName},{$pull:{items:{_id:checkedItemId}}}, function(err, foundList){
+  if(!err){
+    res.redirect("/"+listName)
+  }
+})
+}
+ 
 })
 
-
-app.get('/work', (req, res) => {
-  
-  res.render('list',{listTitle:"Work_List", newListItems:workItems})
-  
-})
 
 
 app.get("/about", (req,res)=>{
