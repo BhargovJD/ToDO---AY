@@ -11,13 +11,15 @@ app.use(express.static("public"))
 
 app.set("view engine","ejs")
 
-const port = 3000
 
 
 
 
 // Connection URL and creating Mongodb database todoList
-const url = 'mongodb://localhost:27017/todoList';
+// const url = 'mongodb://localhost:27017/todoList';
+const url = 'mongodb+srv://bhargov:ONhT1ATHBAp3ibN5@cluster0.nrdrkrf.mongodb.net/todoList';
+
+
 mongoose.connect(url)
 
 // For item schema
@@ -158,7 +160,6 @@ if(listName === "Today"){
 
 else{
 
-  console.log("l;;")
   List.findOneAndUpdate({name:listName},{$pull:{items:{_id:checkedItemId}}}, function(err, foundList){
   if(!err){
     res.redirect("/"+listName)
@@ -174,6 +175,11 @@ app.get("/about", (req,res)=>{
   res.render("about")
 })
 
+
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
 
 
 app.listen(port, function(){
